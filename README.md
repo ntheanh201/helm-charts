@@ -10,7 +10,7 @@ This repository contains custom Helm charts that are designed to simplify the de
 
 ### 📊 nvitop-exporter
 
-**Version:** 0.1.0 | **App Version:** 1.3.2
+**Version:** 0.1.0 | **App Version:** 1.5.1
 
 A Helm chart for deploying [nvitop-exporter](https://github.com/XuehaiPan/nvitop), a Prometheus exporter for comprehensive NVIDIA GPU monitoring.
 
@@ -49,13 +49,13 @@ A Helm chart for deploying [nvitop-exporter](https://github.com/XuehaiPan/nvitop
 2. **Install a chart:**
    ```bash
    # Install nvitop-exporter with default values
-   helm install nvitop-exporter ./nvitop-exporter
+   helm install nvitop-exporter https://ntheanh201.id.vn/helm-charts
 
    # Install with custom values
-   helm install nvitop-exporter ./nvitop-exporter -f custom-values.yaml
+   helm install nvitop-exporter https://ntheanh201.id.vn/helm-charts -f custom-values.yaml
 
    # Install in a specific namespace
-   helm install nvitop-exporter ./nvitop-exporter --namespace monitoring --create-namespace
+   helm install nvitop-exporter https://ntheanh201.id.vn/helm-charts --namespace monitoring --create-namespace
    ```
 
 3. **Verify the installation:**
@@ -89,7 +89,6 @@ helm-charts/
     ├── Chart.yaml              # Chart metadata
     ├── README.md               # Chart-specific documentation
     ├── values.yaml             # Default configuration values
-    ├── values-production.yaml  # Production-ready values
     ├── templates/              # Kubernetes manifests templates
     └── charts/                 # Chart dependencies
 ```
@@ -111,7 +110,7 @@ helm-charts/
 
 3. Follow the established patterns:
    - Include comprehensive README.md
-   - Provide production-ready values file
+   - Provide values file
    - Add proper labels and annotations
    - Include ServiceMonitor for Prometheus integration (if applicable)
 
@@ -141,7 +140,7 @@ helm template chart-name ./chart-name
 
 - Follow [Helm best practices](https://helm.sh/docs/chart_best_practices/)
 - Include comprehensive documentation
-- Provide both development and production value files
+- Provide production-ready default value files
 - Use semantic versioning
 - Include proper resource limits and requests
 - Add health checks and readiness probes
