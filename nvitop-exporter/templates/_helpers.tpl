@@ -62,14 +62,15 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Create the nvitop-exporter command
+Create the nvitop-exporter command args
 */}}
-{{- define "nvitop-exporter.command" -}}
-{{- $args := list "pipx" "run" "nvitop-exporter" }}
-{{- $args = append $args "--bind-address" .Values.nvitopExporter.bindAddress }}
-{{- $args = append $args "--port" (.Values.nvitopExporter.port | toString) }}
-{{- range .Values.nvitopExporter.extraArgs }}
-{{- $args = append $args . }}
+{{- define "nvitop-exporter.args" -}}
+- "--bind-address={{ .Values.nvitopExporter.bindAddress }}"
+- "--port={{ .Values.nvitopExporter.port }}"
+{{- if .Values.nvitopExporter.interval }}
+- "--interval={{ .Values.nvitopExporter.interval }}"
 {{- end }}
-{{- $args | toJson }}
+{{- range .Values.nvitopExporter.extraArgs }}
+- {{ . | quote }}
+{{- end }}
 {{- end }} 
