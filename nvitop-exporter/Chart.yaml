@@ -1,0 +1,23 @@
+apiVersion: v2
+name: nvitop-exporter
+description: A Helm chart for nvitop-exporter - Prometheus exporter for NVIDIA GPU monitoring
+type: application
+version: 0.1.0
+appVersion: "1.5.1"
+home: https://github.com/ntheanh201/nvitop
+sources:
+  - https://github.com/XuehaiPan/nvitop
+  - https://github.com/ntheanh201/nvitop
+keywords:
+  - nvidia
+  - gpu
+  - monitoring
+  - prometheus
+  - exporter
+maintainers:
+  - name: ntheanh201
+    email: ntheanh201@gmail.com
+  - name: XuehaiPan
+    email: XuehaiPan@outlook.com
+annotations:
+  category: Monitoring

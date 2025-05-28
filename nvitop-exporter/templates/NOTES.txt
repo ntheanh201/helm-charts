@@ -1,0 +1,82 @@
+1. Get the application URL by running these commands:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "nvitop-exporter.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "nvitop-exporter.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "nvitop-exporter.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.service.port }}
+{{- else if contains "ClusterIP" .Values.service.type }}
+  # Since this is a DaemonSet, you can access any pod directly:
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "nvitop-exporter.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to access the metrics"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+{{- end }}
+
+2. Check the DaemonSet status:
+  kubectl get daemonset --namespace {{ .Release.Namespace }} {{ include "nvitop-exporter.fullname" . }}
+  
+  # View pods running on each GPU node:
+  kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "nvitop-exporter.name" . }}" -o wide
+
+3. Check the metrics endpoint:
+{{- if contains "ClusterIP" .Values.service.type }}
+  # Access via service:
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "nvitop-exporter.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+  curl http://localhost:{{ .Values.service.port }}/metrics
+  
+  # Or access a specific pod directly:
+  kubectl --namespace {{ .Release.Namespace }} port-forward <pod-name> {{ .Values.service.port }}:{{ .Values.service.port }}
+  curl http://localhost:{{ .Values.service.port }}/metrics
+{{- end }}
+
+4. Monitor GPU metrics:
+   The nvitop-exporter DaemonSet is now running on all GPU nodes and exposing NVIDIA GPU metrics at the /metrics endpoint.
+   
+   Key metrics include:
+   - nvitop_gpu_utilization_percent
+   - nvitop_gpu_memory_used_bytes
+   - nvitop_gpu_memory_total_bytes
+   - nvitop_gpu_temperature_celsius
+   - nvitop_gpu_power_draw_watts
+
+{{- if .Values.serviceMonitor.enabled }}
+5. Prometheus ServiceMonitor:
+   A ServiceMonitor has been created for Prometheus Operator integration.
+   Your Prometheus should automatically discover and scrape this exporter from all GPU nodes.
+{{- else }}
+5. Prometheus Integration:
+   To enable Prometheus scraping, either:
+   - Set serviceMonitor.enabled=true if using Prometheus Operator
+   - Add the service as a scrape target in your Prometheus configuration
+   - Use Kubernetes service discovery to scrape all DaemonSet pods
+{{- end }}
+
+6. Grafana Dashboard:
+   You can import the official nvitop Grafana dashboard (ID: 22589) to visualize the metrics.
+
+7. Important Notes for DaemonSet:
+   - This DaemonSet runs one pod per GPU node that matches the nodeSelector
+   - Current nodeSelector: {{ .Values.nodeSelector | toYaml | nindent 6 }}
+   - Ensure your GPU nodes are properly labeled to match the nodeSelector
+   - The DaemonSet automatically scales when GPU nodes are added/removed
+   - Each pod monitors the GPUs on its respective node
+   
+8. Troubleshooting:
+   # Check if pods are running on expected nodes:
+   kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "nvitop-exporter.name" . }}" -o wide
+   
+   # Check GPU node labels:
+   kubectl get nodes --show-labels | grep -E "(gpu)"
+   
+   # If no pods are running, check if nodes match the nodeSelector:
+   kubectl get nodes -l {{ range $key, $value := .Values.nodeSelector }}{{ $key }}={{ $value }}{{ end }} 
