@@ -1,0 +1,115 @@
+# Default values for nvitop-exporter
+
+image:
+  repository: ghcr.io/ntheanh201/nvitop
+  pullPolicy: Always
+  tag: "exporter-1.5.1"
+
+nvitopExporter:
+  port: 5050
+  bindAddress: "0.0.0.0"
+
+hostNetwork: false  # Set to true if you want to use host networking
+hostPID: false      # Set to true if you need access to host processes
+
+serviceAccount:
+  create: true
+  annotations:
+    # Add any required annotations for your environment
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "5050"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  runAsNonRoot: false  # Required for GPU access
+
+securityContext:
+  privileged: true  # Required for GPU device access
+  capabilities:
+    add:
+      - SYS_ADMIN
+
+service:
+  type: ClusterIP
+  port: 5050
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5050"
+
+# Enable Prometheus ServiceMonitor for automatic discovery
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  labels:
+    prometheus: kube-prometheus
+    app: prometheus-operator
+    release: kube-prom-stack
+  interval: 15s
+  scrapeTimeout: 10s
+
+# Resource limits for production
+resources:
+  limits:
+    cpu: 200m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+# DaemonSet update strategy for production
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
+
+# Configure for your GPU nodes - CRITICAL for DaemonSet
+nodeSelector:
+  # Use labels that identify your GPU nodes
+  nvidia.com/gpu.present: "true"
+
+# Enhanced probes for production
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /metrics
+    port: http
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /metrics
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+# Additional labels for monitoring and management
+podLabels:
+  environment: production
+  component: gpu-monitoring
+  team: infrastructure
+
+# Additional volumes for enhanced monitoring (optional)
+extraVolumes: []
+# Example: Mount additional host paths if needed
+# extraVolumes:
+#   - name: nvidia-ml
+#     hostPath:
+#       path: /usr/lib/x86_64-linux-gnu
+#       type: Directory
+
+extraVolumeMounts: []
+# Example: Mount additional paths
+# extraVolumeMounts:
+#   - name: nvidia-ml
+#     mountPath: /usr/lib/x86_64-linux-gnu
+#     readOnly: true
