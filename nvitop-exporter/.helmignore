@@ -21,13 +21,3 @@
 .idea/
 *.tmproj
 .vscode/
-# OS generated files
-Thumbs.db
-# Helm test files
-tests/
-# Example values files
-values-*.yaml
-!values.yaml
-# Documentation
-*.md
-!README.md 
