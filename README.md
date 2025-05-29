@@ -48,14 +48,18 @@ A Helm chart for deploying [nvitop-exporter](https://github.com/XuehaiPan/nvitop
 
 2. **Install a chart:**
    ```bash
+   # Add the repository
+   helm repo add ntheanh201 https://ntheanh201.id.vn/helm-charts
+   helm repo update
+
    # Install nvitop-exporter with default values
-   helm install nvitop-exporter https://ntheanh201.id.vn/helm-charts
+   helm install nvitop-exporter ntheanh201/nvitop-exporter
 
    # Install with custom values
-   helm install nvitop-exporter https://ntheanh201.id.vn/helm-charts -f custom-values.yaml
+   helm install nvitop-exporter ntheanh201/nvitop-exporter -f custom-values.yaml
 
    # Install in a specific namespace
-   helm install nvitop-exporter https://ntheanh201.id.vn/helm-charts --namespace monitoring --create-namespace
+   helm install nvitop-exporter ntheanh201/nvitop-exporter --namespace monitoring --create-namespace
    ```
 
 3. **Verify the installation:**
