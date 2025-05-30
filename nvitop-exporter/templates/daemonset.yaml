@@ -85,7 +85,8 @@ spec:
                   fieldPath: status.hostIP
             {{- range .Values.nvitopExporter.env }}
             - name: {{ .name }}
-              value: {{ .value | quote }}
+              valueFrom:
+                {{- toYaml .valueFrom | nindent 16 }}
             {{- end }}
           volumeMounts:
             # Mount NVIDIA device files
