@@ -72,10 +72,10 @@ A Helm chart for deploying [nvitop-exporter](https://github.com/XuehaiPan/nvitop
 
 ```bash
 # Upgrade to a new version
-helm upgrade nvitop-exporter ./nvitop-exporter
+helm upgrade nvitop-exporter ntheanh201/nvitop-exporter
 
 # Upgrade with new values
-helm upgrade nvitop-exporter ./nvitop-exporter -f updated-values.yaml
+helm upgrade nvitop-exporter ntheanh201/nvitop-exporter -f updated-values.yaml
 ```
 
 ### Uninstalling Charts
